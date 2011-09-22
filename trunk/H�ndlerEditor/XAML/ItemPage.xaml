@@ -14,7 +14,7 @@
             <StackPanel Name="spItems" />
         </ScrollViewer>
         <Grid Grid.Row="1">
-            <Button Name="btAdd" Click="BtAddClick" Content="+" 
+            <Button Name="btAdd" Click="AddRow" Content="+" 
                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
         </Grid>
     </Grid>

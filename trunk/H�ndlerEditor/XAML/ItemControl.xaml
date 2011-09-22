@@ -7,13 +7,13 @@
              Width="38"
              Height="38"
              x:Name="Control">
-    <Grid>
+    <Grid Background="Transparent">
         <Popup PlacementTarget="{Binding ElementName=Control}" Name="_selectorPopup"
                Placement="Bottom" PopupAnimation="Fade" AllowsTransparency="False" >
             <XAML:ItemSelector x:Name="Selector"  />
         </Popup>
         <Border Margin="2" BorderThickness="1" BorderBrush="#FF727272">
-            <Image Source="{Binding ElementName=Control, Path=Icon}" ToolTip="{Binding ElementName=Control, Path=Item.Name}" MouseLeftButtonUp="Image_MouseLeftButtonUp">
+            <Image Source="{Binding ElementName=Control, Path=Icon}" ToolTip="{Binding ElementName=Control, Path=Item.Name}" MouseLeftButtonUp="ImageMouseLeftButtonUp">
                 <Image.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Choose Item" Click="MenuChooseClick" />

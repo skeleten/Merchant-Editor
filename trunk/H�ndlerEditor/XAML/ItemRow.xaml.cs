@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
-using System.Windows.Controls;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace HändlerEditor.XAML
 {
@@ -9,9 +10,11 @@ namespace HändlerEditor.XAML
     /// </summary>
     public partial class ItemRow
     {
+        private readonly TaskScheduler _sheduler;
         public ItemRow()
         {
             InitializeComponent();
+            _sheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
             for (int i = 0; i < 6; i++)
                 this[i] = null;
@@ -67,8 +70,10 @@ namespace HändlerEditor.XAML
             }
         }
 
-        private void BtRemoveClick(object sender, System.Windows.RoutedEventArgs e)
+        private void BtRemoveClick(object sender, RoutedEventArgs e)
         {
+            // Request remove.
+            // This event is usally caught by a ItemPage.
             if (OnRemoveRequested != null)
                 OnRemoveRequested(this);
         }
@@ -78,14 +83,16 @@ namespace HändlerEditor.XAML
 
         private void UserControlMouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
+            // As the event is called by the MainThread, here is no invocation or TaskSheduler needed.
             btRemove.Visibility = Visibility.Visible;
-            //this.Width += 38;
         }
 
         private void UserControlMouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            //this.Width -= 38;
-            btRemove.Visibility = Visibility.Collapsed;
+            // Hide the remove-button after 250ms
+            var startHide = new Task(() => Thread.Sleep(250));
+            startHide.ContinueWith(task => btRemove.Visibility = Visibility.Collapsed, _sheduler);
+            startHide.Start();
         }
     }
 }

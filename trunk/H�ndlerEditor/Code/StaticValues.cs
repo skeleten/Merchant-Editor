@@ -6,6 +6,7 @@ namespace HändlerEditor.Code
     {
         public static string GetNameLine(int tab)
         {
+            // NameLine for a merchant-table by table number
             return string.Format("#Table	Tab{0:00}	        									\n",
                                     tab);
         }
@@ -13,6 +14,7 @@ namespace HändlerEditor.Code
         {
             get
             {
+                // Type-Line for a merchant table
                 return "#ColumnType	BYTE	String[33]	String[33]	String[33]	String[33]	String[33]	String[33]					\n";
             }
         }
@@ -20,6 +22,7 @@ namespace HändlerEditor.Code
         {
             get
             {
+                // Column-Line for a mechant-table
                 return "#ColumnName	Rec	Column00	Column01	Column02	Column03	Column04	Column05					\n";
             }
         }
@@ -27,8 +30,9 @@ namespace HändlerEditor.Code
         {
             get
             {
-                DataTable tab = new DataTable();
+                var tab = new DataTable();
 
+                // Table columns for a merchant-table.
                 tab.Columns.Add(new DataColumn("Rec", typeof(string)));
                 tab.Columns.Add(new DataColumn("Column00", typeof(string)));
                 tab.Columns.Add(new DataColumn("Column01", typeof(string)));
@@ -42,6 +46,7 @@ namespace HändlerEditor.Code
         }
         public static void AddFileHeader(ShineTableFile table)
         {
+            // Add standart header
             table.FileHeader.Add("#ignore	\\o042			; ÀÎ¿ëºÎÈ£ ¹«½Ã		");
             table.FileHeader.Add("#exchange	#	\\x20		; # => space	");
         }

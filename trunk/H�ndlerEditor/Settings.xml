@@ -1,5 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Settings>
+  <!-- Path to the files of the Icons. -->
   <IconPath>Data\DDS</IconPath>
+  <!-- Path to the SHN-Files -->
   <DataPath>Data</DataPath>
+  <!-- Update intervall in the ItemSelector search. -->
+  <!-- Increase this value to increase performance on older compputers.-->
+  <!-- Lower values will make a more On-Type-Search feeling. -->
+  <UpdateInterval>200</UpdateInterval>
 </Settings>

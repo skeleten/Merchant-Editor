@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
 
 namespace HändlerEditor.Code
 {
@@ -15,7 +13,6 @@ namespace HändlerEditor.Code
             Icons = new ConcurrentDictionary<string, FiestaIconFile>();
 
             string[] icons = Directory.GetFiles(iconPath);
-            Task last = null;
             foreach(string path in icons)
             {
 

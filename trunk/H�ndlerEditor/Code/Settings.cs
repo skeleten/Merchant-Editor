@@ -6,7 +6,7 @@ namespace HändlerEditor.Code
     {
         public static void Load()
         {
-            XmlDocument doc = new XmlDocument();
+            var doc = new XmlDocument();
             doc.Load("Settings.xml");
             foreach (XmlNode n in doc.ChildNodes)
                 ParseXmlNode(n);
@@ -15,15 +15,22 @@ namespace HändlerEditor.Code
         {
             switch (n.Name)
             {
+                    // rekrusive search for the root node
                 case "Settings":
                     foreach (XmlNode node in n.ChildNodes)
                         ParseXmlNode(node);
                     break;
+                    // path to the icon files
                 case "IconPath":
-                    Settings.IconPath = n.InnerText;
+                    IconPath = n.InnerText;
                     break;
+                    // path to the shn files
                 case "DataPath":
-                    Settings.DataPath = n.InnerText;
+                    DataPath = n.InnerText;
+                    break;
+                    // interval to update the search in ItemSelector
+                case "UpdateInterval":
+                    UpdateInterval = int.Parse(n.InnerText);
                     break;
                 default:
                     break;
@@ -32,5 +39,6 @@ namespace HändlerEditor.Code
 
         public static string IconPath { get; private set; }
         public static string DataPath { get; private set; }
+        public static int UpdateInterval { get; private set; }
     }
 }

@@ -1,7 +1,9 @@
 ﻿<Window x:Class="HändlerEditor.XAML.RenameTabWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="RenameTabWindow" Height="200" Width="450">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:XAML="clr-namespace:HändlerEditor.XAML" Title="RenameTabWindow" Height="106" Width="450">
+    <Window.CommandBindings>
+        <CommandBinding Command="{x:Static XAML:RenameTabWindow.CloseCommand}" Executed="CloseCommandExecuted" />
+    </Window.CommandBindings>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -13,8 +15,8 @@
         </Grid.ColumnDefinitions>
         
         <StackPanel Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" Orientation="Horizontal">
-            <Button Click="ButtonOkClick" IsDefault="True" Width="100" Margin="5">Ok</Button>
-            <Button Click="ButtonCancelClick" Width="100" Margin="5">Cancel</Button>
+            <Button Height="25" Click="ButtonOkClick" IsDefault="True" Width="100" Margin="5">Ok</Button>
+            <Button Height="25" Click="ButtonCancelClick" Width="100" Margin="5">Cancel</Button>
         </StackPanel>
         
         <Label Grid.Column="0" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Center">New Tab-Name:</Label>

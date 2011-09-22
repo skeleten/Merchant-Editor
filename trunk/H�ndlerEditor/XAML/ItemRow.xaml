@@ -6,7 +6,7 @@
              xmlns:xaml="clr-namespace:HändlerEditor.XAML"
              Width="254"
              mc:Ignorable="d"  MouseEnter="UserControlMouseEnter" MouseLeave="UserControlMouseLeave">
-    <Grid>
+    <Grid Background="Transparent">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
@@ -24,7 +24,7 @@
         <xaml:ItemControl x:Name="item4" Grid.Column="4" />
         <xaml:ItemControl x:Name="item5" Grid.Column="5" />
         
-        <Button x:Name="btRemove" Grid.Column="6" Click="BtRemoveClick" Visibility="Hidden" Content="-"></Button>
+        <Button x:Name="btRemove" Height="38"  Grid.Column="6" Click="BtRemoveClick" Visibility="Hidden" Content="-"></Button>
         
     </Grid>
 </UserControl>

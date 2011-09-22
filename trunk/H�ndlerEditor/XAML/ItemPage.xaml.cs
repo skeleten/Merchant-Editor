@@ -12,22 +12,16 @@ namespace HändlerEditor.XAML
             InitializeComponent();
         }
 
-        private void BtAddClick(object sender, RoutedEventArgs e)
+        public void AddRow(object sender, RoutedEventArgs e)
         {
-            ItemRow r = new ItemRow();
-            r.OnRemoveRequested += new ItemRow.OnRemoveRequestedDelegate(r_OnRemoveRequested);
+            var r = new ItemRow();
+            r.OnRemoveRequested += r_OnRemoveRequested;
             spItems.Children.Add(r);
         }
 
         internal void r_OnRemoveRequested(object sender)
         {
             spItems.Children.Remove((UIElement) sender);
-        }
-
-        private void BtRemClick(object sender, RoutedEventArgs e)
-        {
-            if(spItems.Children.Count > 0)
-                spItems.Children.RemoveAt(spItems.Children.Count - 1);
         }
     }
 }

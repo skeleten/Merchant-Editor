@@ -1,7 +1,20 @@
 ﻿<Window x:Class="HändlerEditor.XAML.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="350" Width="525">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+        xmlns:XAML="clr-namespace:HändlerEditor.XAML" 
+        Title="MainWindow" Height="350" Width="500"
+        SizeToContent="Height" MinHeight="300" MinWidth="300">
+    <Window.CommandBindings>
+        <CommandBinding Command="{x:Static XAML:MainWindow.SaveCommand}"        Executed="SaveCommandExecuted" />
+        <CommandBinding Command="{x:Static XAML:MainWindow.OpenCommand}"        Executed="OpenCommandExecuted" />
+        <CommandBinding Command="{x:Static XAML:MainWindow.AddTabCommand}"      Executed="AddTabCommandExecuted" />
+        <CommandBinding Command="{x:Static XAML:MainWindow.RemoveTabCommand}"   Executed="RemoveTabExecuted" />
+        <CommandBinding Command="{x:Static XAML:MainWindow.CycleTabsCommand}"   Executed="CycleTabsExecuted" />
+        <CommandBinding Command="{x:Static XAML:MainWindow.ExportCommand}"      Executed="ExportExecuted" />
+        <CommandBinding Command="{x:Static XAML:MainWindow.ImportCommand}"      Executed="ImportExecuted" />
+        <CommandBinding Command="{x:Static XAML:MainWindow.RenameTabCommand}"   Executed="RenameTabExecuted" />
+        <CommandBinding Command="{x:Static XAML:MainWindow.AddRowCommand}"      Executed="AddRowCommandExecuted" />
+    </Window.CommandBindings>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -28,8 +41,8 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Button Name="btAdd" Click="BtAddClick">Add</Button>
-            <Button Name="btRemove" Click="BtRemoveClick" Grid.Column="1">Remove</Button>
+            <Button Name="btAdd" Height="25" Click="BtAddClick">Add</Button>
+            <Button Name="btRemove" Height="25" Click="BtRemoveClick" Grid.Column="1">Remove</Button>
         </Grid>
     </Grid>
 </Window>

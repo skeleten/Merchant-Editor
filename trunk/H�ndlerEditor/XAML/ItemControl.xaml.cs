@@ -1,8 +1,8 @@
 ﻿using System.Threading;
 using System.Windows;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using System.Threading.Tasks;
 
 namespace HändlerEditor.XAML
 {
@@ -11,19 +11,19 @@ namespace HändlerEditor.XAML
     /// </summary>
     public partial class ItemControl
     {
-        private TaskScheduler _sheduler;
+        private static Popup _openSelector = null;
+
         public ItemControl()
         {
             InitializeComponent();
-            Selector.OnItemSelected += new System.EventHandler(Selector_OnItemSelected);
-            _sheduler = TaskScheduler.FromCurrentSynchronizationContext();
+            Selector.OnItemSelected += Selector_OnItemSelected;
         }
 
         void Selector_OnItemSelected(object sender, System.EventArgs e)
         {
             if(Selector.ItemChoosen)
             {
-                this.Item = Selector.Item;
+                Item = Selector.Item;
             }
 
             Selector.StopUpdating();
@@ -42,14 +42,14 @@ namespace HändlerEditor.XAML
             set
             
             {
-                this.Dispatcher.BeginInvoke(DispatcherPriority.Background,
+                Dispatcher.BeginInvoke(DispatcherPriority.Background,
                                                                       (SendOrPostCallback) delegate
                                                                                                {
                                                                                                    SetValue(
                                                                                                        ItemProperty,
                                                                                                        value);
                                                                                                }, value);
-                Icon = value == null ? Code.IconBuffer.Icons["haircolor"][63] : value.Icon;
+                Icon = value == null ? Code.IconBuffer.Icons["rngitem000"][63] : value.Icon;
             }
         }
 
@@ -61,7 +61,7 @@ namespace HändlerEditor.XAML
             }
             set
             {
-                                          this.Dispatcher.BeginInvoke(DispatcherPriority.Background,
+                                          Dispatcher.BeginInvoke(DispatcherPriority.Background,
                                                                       (SendOrPostCallback) delegate
                                                                                                {
                                                                                                    SetValue(
@@ -77,14 +77,24 @@ namespace HändlerEditor.XAML
         }
         private void MenuChooseClick(object sender, RoutedEventArgs e)
         {
+            if(_openSelector != null)
+            {
+                var openSelectorItemChooser = _openSelector.Child as ItemSelector;
+                if(openSelectorItemChooser != null)
+                {
+                    openSelectorItemChooser.ItemChoosen = false;
+                    openSelectorItemChooser.StopUpdating();
+                }
+                _openSelector.IsOpen = false;
+            }
             Selector.ItemChoosen = false;
             Selector.StartUpdating();
-            //Selector.Start();
+            _openSelector = _selectorPopup;
             _selectorPopup.IsOpen = true;
             Selector.tb.Focus();
         }
 
-        private void Image_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void ImageMouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             MenuChooseClick(null, null);
         }

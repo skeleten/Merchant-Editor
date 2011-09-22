@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Data;
+using System.Windows.Input;
 using System.Xml;
 using HändlerEditor.Code;
 using Microsoft.Win32;
@@ -14,6 +15,18 @@ namespace HändlerEditor.XAML
     /// </summary>
     public partial class MainWindow
     {
+        #region Shortcuts
+        public static readonly RoutedCommand SaveCommand =      new RoutedCommand();
+        public static readonly RoutedCommand OpenCommand =      new RoutedCommand();
+        public static readonly RoutedCommand AddTabCommand =    new RoutedCommand();
+        public static readonly RoutedCommand RemoveTabCommand = new RoutedCommand();
+        public static readonly RoutedCommand CycleTabsCommand = new RoutedCommand();
+        public static readonly RoutedCommand ExportCommand =    new RoutedCommand();
+        public static readonly RoutedCommand ImportCommand =    new RoutedCommand();
+        public static readonly RoutedCommand RenameTabCommand = new RoutedCommand();
+        public static readonly RoutedCommand AddRowCommand =    new RoutedCommand();
+        #endregion
+
         public MainWindow()
         {
             //Settings.Load();
@@ -21,11 +34,25 @@ namespace HändlerEditor.XAML
             //IconBuffer.Initialize(Settings.IconPath);
 
             InitializeComponent();
+            InitializeShortcuts();
+        }
+
+        private static void InitializeShortcuts()
+        {
+            SaveCommand.InputGestures.Add(new KeyGesture(       Key.S,      ModifierKeys.Control));
+            OpenCommand.InputGestures.Add(new KeyGesture(       Key.O,      ModifierKeys.Control));
+            AddTabCommand.InputGestures.Add(new KeyGesture(     Key.A,      ModifierKeys.Control));
+            RemoveTabCommand.InputGestures.Add(new KeyGesture(  Key.D,      ModifierKeys.Control));
+            CycleTabsCommand.InputGestures.Add(new KeyGesture(  Key.Tab,    ModifierKeys.Control));
+            ExportCommand.InputGestures.Add(new KeyGesture(     Key.E,      ModifierKeys.Control));
+            ImportCommand.InputGestures.Add(new KeyGesture(     Key.I,      ModifierKeys.Control));
+            RenameTabCommand.InputGestures.Add(new KeyGesture(  Key.R,      ModifierKeys.Control));
+            AddRowCommand.InputGestures.Add(new KeyGesture(     Key.Q,      ModifierKeys.Control));
         }
 
         private void BtAddClick(object sender, RoutedEventArgs e)
         {
-            TabItem ti = new TabItem
+            var ti = new TabItem
                              {
                                  Header = string.Format("tab{0:00}", tcTabs.Items.Count),
                                  Content = (new ItemPage())
@@ -41,7 +68,9 @@ namespace HändlerEditor.XAML
 
         private void MenuOpenClick(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog diag = new OpenFileDialog
+            bool thrownUnkItemMsg = false;
+
+            var diag = new OpenFileDialog
                                         {
                                             Filter = "Merchant TXT-Files (*.txt)|*.txt",
                                             Multiselect = false
@@ -52,30 +81,52 @@ namespace HändlerEditor.XAML
 
             tcTabs.Items.Clear();
 
-            ShineTableFile tab = new ShineTableFile();
+            var tab = new ShineTableFile();
             tab.Open(diag.FileName);
             foreach (ShineTableFile.ShineTable t in tab.Tables)
             {
-                TabItem i = new TabItem
+                var i = new TabItem
                                 {
                                     Header = t.Name,
                                 };
-                ItemPage p = new ItemPage();
+                var p = new ItemPage();
                 i.Content = p;
 
                 foreach (DataRow row in t.Content.Rows)
                 {
-                    ItemRow r = new ItemRow();
+                    var r = new ItemRow();
                     r.OnRemoveRequested += p.r_OnRemoveRequested;
 
                     for (int it = 0; it < 6; it++)
                         try
                         {
-                            r[it] = DataProvider.Items.Single(item => item.InxName == (string)row[it + 1]);
+                            DataRow row1 = row;
+                            int it1 = it;
+                            try
+                            {
+                                if(((string)row1[it1 + 1]) == "-")
+                                {
+                                    r[it] = null;
+                                    continue;
+                                }
+                                r[it] = DataProvider.Items.Single(item => item.InxName == (string)row1[it1 + 1]);
+                            }
+                            catch (InvalidOperationException)
+                            {
+                                if(!thrownUnkItemMsg)
+                                {
+                                    thrownUnkItemMsg = true;
+                                    if((new Message("File contains unkown items.\nContinue? (Unkown items wont get displayed)", Message.VisibleButtons.YesNo).ShowDialog()) == Message.VisibleButtons.No)
+                                    {
+                                        tcTabs.Items.Clear();
+                                        return;
+                                    }
+                                    continue;
+                                }
+                            }
                         }
                         catch (Exception)
                         {
-                            // Throw message?
                             continue;
                         }
 
@@ -85,12 +136,11 @@ namespace HändlerEditor.XAML
                 tcTabs.Items.Add(i);
             }
 
-            // TODO: Open and Load File
         }
 
         private void MenuSaveClick(object sender, RoutedEventArgs e)
         {
-            SaveFileDialog diag = new SaveFileDialog
+            var diag = new SaveFileDialog
                                         {
                                             Filter = "Merchant TXTs (*.txt) | *.txt"
                                         };
@@ -98,12 +148,12 @@ namespace HändlerEditor.XAML
             if(diag.ShowDialog() != true)
                 return;
 
-            ShineTableFile st = new ShineTableFile();
+            var st = new ShineTableFile();
             StaticValues.AddFileHeader(st);
 
             for (int i = 0; i < tcTabs.Items.Count; i++)
             {
-                ShineTableFile.ShineTable tab = new ShineTableFile.ShineTable
+                var tab = new ShineTableFile.ShineTable
                                            {
                                                ColumnNameLine = StaticValues.ColumnLine,
                                                NameLine = StaticValues.GetNameLine(i),
@@ -111,11 +161,11 @@ namespace HändlerEditor.XAML
                                                Content = StaticValues.DataTableTemplate
                                            };
 
-                TabItem t = (TabItem)tcTabs.Items[i];
-                ItemPage p = (ItemPage)t.Content;
+                var t = (TabItem)tcTabs.Items[i];
+                var p = (ItemPage)t.Content;
                 for (int it = 0; it < p.spItems.Children.Count; it++)
                 {
-                    ItemRow r = (ItemRow)p.spItems.Children[it];
+                    var r = (ItemRow)p.spItems.Children[it];
                     DataRow row = tab.Content.NewRow();
 
                     row["Rec"] = it.ToString();
@@ -183,7 +233,7 @@ namespace HändlerEditor.XAML
 
         private void MenuLoadPresetClick(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog diag = new OpenFileDialog
+            var diag = new OpenFileDialog
                                       {
                                           Filter = "XML Preset Files (*.xml)|*.xml"
                                       };
@@ -192,7 +242,7 @@ namespace HändlerEditor.XAML
 
             tcTabs.Items.Clear();
 
-            XmlDocument doc = new XmlDocument();
+            var doc = new XmlDocument();
             doc.Load(diag.FileName);
 
             XmlElement root = null;
@@ -207,35 +257,36 @@ namespace HändlerEditor.XAML
 
             foreach(XmlElement tab in root.ChildNodes)
             {
-                ItemPage ip = new ItemPage();
-                TabItem tb = new TabItem
+                var ip = new ItemPage();
+                var tb = new TabItem
                                  {
                                      Header = tab.GetAttribute("Name"),
                                      Content = ip
                                  };
                 foreach(XmlElement itemRow in tab.ChildNodes)
                 {
-                    ItemRow ir = new ItemRow();
+                    var ir = new ItemRow();
                     ir.OnRemoveRequested += ip.r_OnRemoveRequested;
+                    var row = itemRow;                    
 
                     if(itemRow.GetAttribute("Item0") != "")
                         ir.item0.Item =
-                            DataProvider.Items.FirstOrDefault(i => i.InxName == itemRow.GetAttribute("Item0"));
+                            DataProvider.Items.FirstOrDefault(i => i.InxName == row.GetAttribute("Item0"));
                     if(itemRow.GetAttribute("Item1") != "")
                         ir.item1.Item =
-                            DataProvider.Items.FirstOrDefault(i => i.InxName == itemRow.GetAttribute("Item1"));
+                            DataProvider.Items.FirstOrDefault(i => i.InxName == row.GetAttribute("Item1"));
                     if(itemRow.GetAttribute("Item2") != "")
                         ir.item2.Item =
-                            DataProvider.Items.FirstOrDefault(i => i.InxName == itemRow.GetAttribute("Item2"));
+                            DataProvider.Items.FirstOrDefault(i => i.InxName == row.GetAttribute("Item2"));
                     if(itemRow.GetAttribute("Item3") != "")
                         ir.item3.Item =
-                            DataProvider.Items.FirstOrDefault(i => i.InxName == itemRow.GetAttribute("Item3"));
+                            DataProvider.Items.FirstOrDefault(i => i.InxName == row.GetAttribute("Item3"));
                     if(itemRow.GetAttribute("Item4") != "")
                         ir.item4.Item =
-                            DataProvider.Items.FirstOrDefault(i => i.InxName == itemRow.GetAttribute("Item4"));
+                            DataProvider.Items.FirstOrDefault(i => i.InxName == row.GetAttribute("Item4"));
                     if(itemRow.GetAttribute("Item5") != "")
                         ir.item5.Item =
-                            DataProvider.Items.FirstOrDefault(i => i.InxName == itemRow.GetAttribute("Item5"));
+                            DataProvider.Items.FirstOrDefault(i => i.InxName == row.GetAttribute("Item5"));
                     ip.spItems.Children.Add(ir);
                 }
 
@@ -246,15 +297,25 @@ namespace HändlerEditor.XAML
 
         private void MenuRenameTabClick(object sender, RoutedEventArgs e)
         {
+            if (tcTabs.Items.Count <= 0)
+                return;
+
+            var activeTab = (TabItem) tcTabs.SelectedItem;
+            if (activeTab == null)
+                return;
+
             if(tcTabs.Items.Count == 0)
                 return;
 
-            var window = new RenameTabWindow();
-            window.Closed += new EventHandler(window_Closed);
+            var tabItem = (TabItem)tcTabs.Items[tcTabs.SelectedIndex];
+            var window = new RenameTabWindow {tbNewTabName = {Text = (string) tabItem.Header}};
+            window.tbNewTabName.SelectAll();
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            window.Closed += WindowClosed;
             window.ShowDialog();
         }
 
-        void window_Closed(object sender, EventArgs e)
+        void WindowClosed(object sender, EventArgs e)
         {
             var window = (RenameTabWindow) sender;
             if(!window.IsNameSelected)
@@ -262,6 +323,70 @@ namespace HändlerEditor.XAML
 
             var tabItem = (TabItem) tcTabs.Items[tcTabs.SelectedIndex];
             tabItem.Header = window.NewName;
+        }
+
+        private void SaveCommandExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            MenuSaveClick(null, null);
+            e.Handled = true;
+        }
+
+        private void OpenCommandExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            MenuOpenClick(null, null);
+            e.Handled = true;
+        }
+
+        private void AddTabCommandExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            BtAddClick(null, null);
+            e.Handled = true;
+        }
+
+        private void RemoveTabExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            BtRemoveClick(null, null);
+            e.Handled = true;
+        }
+
+        private void CycleTabsExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            if(tcTabs.Items.Count <= 0)
+                return;
+            tcTabs.SelectedIndex = (tcTabs.SelectedIndex + 1)%tcTabs.Items.Count;
+            e.Handled = true;
+        }
+
+        private void ExportExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            MenuSavePresetClick(null, null);
+            e.Handled = true;
+        }
+
+        private void ImportExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            MenuLoadPresetClick(null, null);
+            e.Handled = true;
+        }
+
+        private void RenameTabExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            MenuRenameTabClick(null, null);
+            e.Handled = true;
+        }
+
+        private void AddRowCommandExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            if(tcTabs.Items.Count <= 0)
+                return;
+
+            var activeTab = (TabItem) tcTabs.SelectedItem;
+            if (activeTab == null)
+                return;
+            var activeItemPage = activeTab.Content as ItemPage;
+            if(activeItemPage == null)
+                return;
+            activeItemPage.AddRow(null, null);
         }
     }
 }

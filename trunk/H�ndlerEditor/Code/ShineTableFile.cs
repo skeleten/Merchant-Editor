@@ -3,19 +3,16 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 
-namespace HändlerEditor.Code
-{
+namespace HändlerEditor.Code {
     /// <summary>
     /// Class for Shine Tables.
     /// </summary>
-    public class ShineTableFile
-    {
+    public class ShineTableFile {
         #region Variablen und Konstructoren
 
         public readonly List<string> CommentHeader;
         public readonly List<string> FileHeader;
         private int _curTable;
-        private bool _eof;
         private string _fileName;
 
         private StreamReader _srFile;
@@ -24,8 +21,7 @@ namespace HändlerEditor.Code
 
         private List<ShineTable> _tables;
 
-        public ShineTableFile()
-        {
+        public ShineTableFile() {
             _fileName = "";
 
             _stop = false;
@@ -44,8 +40,7 @@ namespace HändlerEditor.Code
         /// <summary>
         /// List of ShineTableFile.ShineTable's in the opened File.
         /// </summary>
-        public IEnumerable<ShineTable> Tables
-        {
+        public IEnumerable<ShineTable> Tables {
             get { return _tables; }
         }
 
@@ -57,8 +52,7 @@ namespace HändlerEditor.Code
         /// Opens a Shine ShineTable File.
         /// </summary>
         /// <param name="fileName">Path to the File</param>
-        public void Open(string fileName)
-        {
+        public void Open(string fileName) {
             _fileName = fileName;
             ResetValues();
             _tables = new List<ShineTable>();
@@ -75,53 +69,46 @@ namespace HändlerEditor.Code
         /// Saves a Shine ShineTable File.
         /// </summary>
         /// <param name="fileName">Path to the File</param>
-        public void Save(string fileName)
-        {
+        public void Save(string fileName) {
             _fileName = fileName;
             if (File.Exists(_fileName + ".bak"))
                 File.Delete(_fileName + ".bak");
-            if (File.Exists(_fileName))
-            {
+            if (File.Exists(_fileName)) {
                 File.Copy(_fileName, _fileName + ".bak");
                 File.Delete(_fileName);
             }
-            var tmp = File.Create(_fileName);
+            FileStream tmp = File.Create(_fileName);
             tmp.Close();
 
             _swFile = new StreamWriter(_fileName);
 
-            foreach (var str in FileHeader)
+            foreach (string str in FileHeader)
                 _swFile.WriteLine(str);
 
-            foreach (var str in CommentHeader)
+            foreach (string str in CommentHeader)
                 _swFile.WriteLine(str);
 
             _swFile.Flush();
             _swFile.AutoFlush = true;
 
-            foreach (var tData in _tables)
-            {
+            foreach (ShineTable tData in _tables) {
                 _swFile.WriteLine();
                 _swFile.WriteLine(tData.NameLine);
                 _swFile.WriteLine(tData.TypeLine);
                 _swFile.WriteLine(tData.ColumnNameLine);
 
-                foreach (DataRow drData in tData.Content.Rows)
-                {
+                foreach (DataRow drData in tData.Content.Rows) {
                     _swFile.Write("#Record");
-                    foreach (var oData in drData.ItemArray)
-                    {
+                    foreach (object oData in drData.ItemArray) {
                         if (oData == DBNull.Value)
-                        {
                             _swFile.Write("\t" + "");
-                        }
                         else
                             _swFile.Write("\t" + (string) oData);
                     }
                     _swFile.WriteLine();
                 }
 
-                foreach (var comment in tData.Comments)
+                foreach (string comment in tData.Comments)
                     _swFile.WriteLine(comment);
 
                 _swFile.Flush();
@@ -134,8 +121,7 @@ namespace HändlerEditor.Code
 
         #region alte Funktionen...
 
-        private void NextTable()
-        {
+        private void NextTable() {
             _curTable++;
             if (_curTable >= _tables.Count)
                 _curTable = _tables.Count - 1;
@@ -145,42 +131,37 @@ namespace HändlerEditor.Code
 
         #region private Helfer funktionen
 
-        private void ResetValues()
-        {
+        private void ResetValues() {
             //_eof = false;
             _stop = false;
         }
 
-        private bool Reading()
-        {
-            return (!(/*_eof || */ _stop || _srFile.EndOfStream));
+        private bool Reading() {
+            return (!( /*_eof || */ _stop || _srFile.EndOfStream));
         }
 
         #endregion
 
         #region Verarbeitung der Datei
 
-        private void ReadFile()
-        {
+        private void ReadFile() {
             string line;
 
             // Verarbeite Datei
-            while (Reading())
-            {
+            while (Reading()) {
                 line = _srFile.ReadLine();
 
-                if (line != null)
-                {
-                    var rec = line.Split('\t');
-                    var inx = 0;
-                    for (var i = 0; i < rec.Length; ++i)
+                if (line != null) {
+                    string[] rec = line.Split('\t');
+                    int inx = 0;
+                    for (int i = 0; i < rec.Length; ++i) {
                         if (rec[i].StartsWith("#"))
                             inx = i;
+                    }
 
                     #region Verarbeitung
 
-                    switch (rec[inx].ToLower())
-                    {
+                    switch (rec[inx].ToLower()) {
                             // Ende der Datei
                         case "#end":
                             ProcessEnd();
@@ -224,9 +205,8 @@ namespace HändlerEditor.Code
         /// <summary>
         /// Processes a #End line
         /// </summary>
-        private void ProcessEnd()
-        {
-            _stop = true;   // Stop Reading
+        private void ProcessEnd() {
+            _stop = true; // Stop Reading
             //_eof = true; // Ende der Datei
         }
 
@@ -234,35 +214,34 @@ namespace HändlerEditor.Code
         /// Processes a #Columntype line.
         /// </summary>
         /// <param name="line">Complete line wich starts with "#Columntype"</param>
-        private void ProcessColumntype(string line)
-        {
+        private void ProcessColumntype(string line) {
             _tables[_curTable].TypeLine = line;
-			while (_tables[_curTable].TypeLine.StartsWith("\t"))
-				_tables[_curTable].TypeLine = _tables[_curTable].TypeLine.Remove(0, 1);
+            while (_tables[_curTable].TypeLine.StartsWith("\t"))
+                _tables[_curTable].TypeLine = _tables[_curTable].TypeLine.Remove(0, 1);
         }
 
         /// <summary>
         /// Processes a #Columnname line
         /// </summary>
         /// <param name="line">Complete line</param>
-        private void ProcessColumnname(string line)
-        {
-            var rec = line.Split("\t\n".ToCharArray());
-            var y = 0;
-        	foreach (var str in rec)
-        	{
-        	    if (!str.StartsWith("#"))
-        	        if (!_tables[_curTable].Content.Columns.Contains(str))
-        	            if (!str.StartsWith(";"))
-        	                if (str == "")
-        	                {
-        	                    _tables[_curTable].Content.Columns.Add("Empty" + y);
-        	                    ++y;
-        	                }
-        	                else
-        	                    _tables[_curTable].Content.Columns.Add(str);
-        	}
-        	_tables[_curTable].ColumnNameLine = line;
+        private void ProcessColumnname(string line) {
+            string[] rec = line.Split("\t\n".ToCharArray());
+            int y = 0;
+            foreach (string str in rec) {
+                if (!str.StartsWith("#")) {
+                    if (!_tables[_curTable].Content.Columns.Contains(str)) {
+                        if (!str.StartsWith(";")) {
+                            if (str == "") {
+                                _tables[_curTable].Content.Columns.Add("Empty" + y);
+                                ++y;
+                            }
+                            else
+                                _tables[_curTable].Content.Columns.Add(str);
+                        }
+                    }
+                }
+            }
+            _tables[_curTable].ColumnNameLine = line;
             while (_tables[_curTable].ColumnNameLine.StartsWith("\t"))
                 _tables[_curTable].ColumnNameLine = _tables[_curTable].ColumnNameLine.Remove(0, 1);
         }
@@ -273,8 +252,7 @@ namespace HändlerEditor.Code
         /// <param name="line"></param>
         /// <param name="rec"></param>
         /// <param name="inx"></param>
-        private void ProcessTable(string line, string[] rec, int inx)
-        {
+        private void ProcessTable(string line, string[] rec, int inx) {
             var dt = new ShineTable {Name = rec[inx + 1], Content = new DataTable()};
             _tables.Add(dt);
             NextTable();
@@ -287,23 +265,22 @@ namespace HändlerEditor.Code
         /// Processes a #recordin line
         /// </summary>
         /// <param name="rec"></param>
-        private void ProcessRecordin(string[] rec)
-        {
-			// TODO: BUG
+        private void ProcessRecordin(string[] rec) {
+            // TODO: BUG
             int nextVal;
-            for (nextVal = 1; nextVal < rec.Length; nextVal++)
+            for (nextVal = 1; nextVal < rec.Length; nextVal++) {
                 if (rec[nextVal] != "")
                     break;
+            }
             var tab = new ShineTable();
-            foreach (var table in _tables)
+            foreach (ShineTable table in _tables) {
                 if (table.Name == rec[nextVal])
                     tab = table;
-            var dData = tab.Content.NewRow();
-            var x = 0;
-            for (var i = nextVal + 1; i < rec.Length; i++)
-            {
-                if (x < tab.Content.Columns.Count)
-                {
+            }
+            DataRow dData = tab.Content.NewRow();
+            int x = 0;
+            for (int i = nextVal + 1; i < rec.Length; i++) {
+                if (x < tab.Content.Columns.Count) {
                     dData[x + 1] = rec[i];
                     x++;
                 }
@@ -317,11 +294,9 @@ namespace HändlerEditor.Code
         /// <param name="line"></param>
         /// <param name="rec"></param>
         /// <param name="inx"></param>
-        private void ProcessDefault(string line, string[] rec, int inx)
-        {
-            if (_tables.Count >= 1)
-            {
-                // nur fals tabellen vorhanden sind
+        private void ProcessDefault(string line, string[] rec, int inx) {
+            if (_tables.Count >= 1) {
+                // nur falls tabellen vorhanden sind
                 if (rec[inx].StartsWith(";") || rec[inx].Contains(";"))
                     _tables[_curTable].Comments.Add(line);
             }
@@ -336,14 +311,11 @@ namespace HändlerEditor.Code
         /// </summary>
         /// <param name="rec"></param>
         /// <param name="inx"></param>
-        private void ProcessRecord(string[] rec, int inx)
-        {
-            var drData = _tables[_curTable].Content.NewRow();
-            var u = 0;
-            for (var i = inx + 1; i < rec.Length; i++)
-            {
-                if (u < _tables[_curTable].Content.Columns.Count)
-                {
+        private void ProcessRecord(string[] rec, int inx) {
+            DataRow drData = _tables[_curTable].Content.NewRow();
+            int u = 0;
+            for (int i = inx + 1; i < rec.Length; i++) {
+                if (u < _tables[_curTable].Content.Columns.Count) {
                     drData[u] = rec[i];
                     u++;
                 }
@@ -360,37 +332,41 @@ namespace HändlerEditor.Code
         /// Adds a ShineTable to the File
         /// </summary>
         /// <param name="tab">The ShineTable</param>
-        public void AddTable(ShineTable tab)
-        {
+        public void AddTable(ShineTable tab) {
             _tables.Add(tab);
         }
 
+        #region Nested type: ShineTable
 
         /// <summary>
         /// Reperesents a single Table in a <see cref="ShineTableFile"/>.
         /// </summary>
-        public class ShineTable
-        {
+        public class ShineTable {
+            /// <summary>
+            /// List of Comments in the table.
+            /// </summary>
+            public readonly List<string> Comments;
+
             /// <summary>
             /// The Line containing the ColumnNames
             /// </summary>
             public String ColumnNameLine = "";
-            /// <summary>
-            /// List of Comments in the table.
-            /// </summary>
-            public List<string> Comments;
+
             /// <summary>
             /// The content of the table
             /// </summary>
             public DataTable Content;
+
             /// <summary>
             /// The name of the table
             /// </summary>
             public String Name = "";
+
             /// <summary>
             /// The line, containg the name.
             /// </summary>
             public String NameLine = "";
+
             /// <summary>
             /// The line, containing the type definitions for the columns
             /// </summary>
@@ -399,8 +375,7 @@ namespace HändlerEditor.Code
             /// <summary>
             /// Standart-Constructor for a ShineTable
             /// </summary>
-            public ShineTable()
-            {
+            public ShineTable() {
                 Name = string.Empty;
                 TypeLine = string.Empty;
                 ColumnNameLine = string.Empty;
@@ -408,5 +383,7 @@ namespace HändlerEditor.Code
                 Comments = new List<string>();
             }
         }
+
+        #endregion
     }
 }
