@@ -11,6 +11,7 @@ namespace HändlerEditor.XAML
         #region Shortcuts
 
         public static readonly RoutedCommand CloseCommand = new RoutedCommand();
+
         #endregion
 
         public bool IsNameSelected { get; private set; }
