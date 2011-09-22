@@ -1,0 +1,6 @@
+<Configuration>
+  <NamespaceFolders>
+    <SkipFolder>F356B35C-1E80-46BF-A95A-A9997ED5AC5C/d:Data/d:DDS</SkipFolder>
+    <SkipFolder>F356B35C-1E80-46BF-A95A-A9997ED5AC5C/d:Data</SkipFolder>
+  </NamespaceFolders>
+</Configuration>
